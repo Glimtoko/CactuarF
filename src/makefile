@@ -7,6 +7,7 @@ all_objects =  \
 	riemann_sampler.o \
 	riemann_solvers.o \
 	riemann.o \
+	flux.o \
 	cactaur.o
 
 # Installation directory
@@ -89,18 +90,18 @@ $(info )
 .F95.o:
 	$(FC) $(FFLAGS) $(PREPRO) $(INCLUDES) $< -c
 
-cactaurf: $(all_objects)
-	$(FC) $(FFLAGS) $(all_objects) $(LINKS) $(RPATH) -o cactaurf
+cactuarf: $(all_objects)
+	$(FC) $(FFLAGS) $(all_objects) $(LINKS) $(RPATH) -o cactuarf
 
 clean:
-	-rm cactaurf
+	-rm cactuarf
 	-rm *.o
 	-rm *.mod
 
-install: cactaurf
+install: cactuarf
 	@echo Installing to $(INSTALL_DIR)
-	cp cactaurf $(INSTALL_DIR)
-	chmod +x $(INSTALL_DIR)/cactaurf
+	cp cactuarf $(INSTALL_DIR)
+	chmod +x $(INSTALL_DIR)/cactuarf
 
 
 # Dependencies

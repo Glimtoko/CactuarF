@@ -18,6 +18,8 @@ real(kind=real64), intent(in) :: gamma          ! EoS parameter
 ! Local data
 real(kind=real64) :: aL     ! Sound speed
 
+aL = sqrt((gamma*PL)/rhoL)
+
 SL_shock = uL - aL*((gamma + 1.0)/(2.0*gamma)*(P/PL) + &
                 (gamma - 1.0)/(2.0*gamma))**0.5
 
@@ -35,6 +37,8 @@ real(kind=real64), intent(in) :: gamma          ! EoS parameter
 
 ! Local data
 real(kind=real64) :: aR     ! Sound speed
+
+aR = sqrt((gamma*PR)/rhoR)
 
 SR_shock = uR + aR*((gamma + 1.0)/(2.0*gamma)*(P/PR) + &
                 (gamma - 1.0)/(2.0*gamma))**0.5

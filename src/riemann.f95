@@ -47,7 +47,7 @@ call sample( &
 
 ! Calculate energy
 ein = P/((gamma - 1.0)*rho)
-E = rho * (0.5*u*u + e)
+E = rho * (0.5*u*u + ein)
 
 end subroutine solve
 

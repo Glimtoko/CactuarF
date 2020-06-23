@@ -1,6 +1,13 @@
 # CactuarF
 1D First-order Godunov code - Fortran version
 
+## The Euler Equations
+The aim of CactaurF is to provide a simple numerical solver for the Euler equations in 1 dimension. In conservative form, the Euler equations are:
+
+<img src="https://render.githubusercontent.com/render/math?math\mathbf{U}_t %2B \mathbf{F}(\mathbf{U})_x = 0">
+
+Where:
+
 # Test an equation
 <img src="https://render.githubusercontent.com/render/math?math=e^{i %2B\pi} =x%2B1">
 

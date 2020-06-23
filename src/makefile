@@ -1,6 +1,6 @@
 # Fortran compiler and base flags
-FC := gfortran
-FFLAGS := -O3
+FC := mpif90
+FFLAGS := -g
 
 # Object list
 all_objects =  \
@@ -8,6 +8,8 @@ all_objects =  \
 	riemann_solvers.o \
 	riemann.o \
 	flux.o \
+	comms.o \
+	text_output.o \
 	cactaur.o
 
 # Installation directory
@@ -109,5 +111,5 @@ prog.o: data.o memory_manipulation.o mesh_reader.o sod.o lagstep_fi.o text_outpu
 
 sod.o: data.o	# For input and file unit
 
-text_output.o: write_tio.o write_silo.o
+#text_output.o: write_tio.o write_silo.o
 

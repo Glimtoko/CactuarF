@@ -1,7 +1,11 @@
-program cactaurF
+program cactuarF
 use iso_fortran_env, only: int32, real64
 use riemann_solvers
 use flux_functions
+use parallel_comms
+use text_output
+
+use mpi
 implicit none
 
 integer(kind=int32) :: ncells       ! Number of cells in problem
@@ -41,6 +45,16 @@ real(kind=real64) :: dt     ! Timestep from CFL condition
 real(kind=real64) :: dtdx   ! dt/dx, used in Godunov update
 integer(kind=int32) :: step ! Current step
 
+! Parallelism
+integer(kind=int32) :: idL, idR
+integer(kind=int32) :: status   ! Status return from MPI
+integer(kind=int32) :: nprocs   ! Number of processors
+integer(kind=int32) :: rank     ! MPI rank
+integer(kind=int32) :: ncells_per_proc  ! Number of cells per processor
+
+! Runtime
+real(kind=real64) :: time1, time2
+
 ! Output
 integer(kind=int32) :: fnum     ! File number
 
@@ -53,22 +67,48 @@ real(kind=real64) :: xupper             ! Cell boundary. Used in setup
 procedure(riemann_API), pointer :: model
 
 model => riemann_TSRS
-ncells = 250
+ncells = 30000
 CFL = 0.6
 
+! Initialise MPI
+call MPI_Init(status)
+
+! Get number of processors, and this processor's rank
+call MPI_Comm_Size(MPI_COMM_WORLD, nprocs, status)
+call MPI_Comm_Rank(MPI_COMM_WORLD, rank, status)
+if (rank == 0) write(*,'("This is CactuarF running on ",i2," processors")') nprocs
+
+! Get cells per processor, and ensure this is an integer
+ncells_per_proc = ncells / nprocs
+if (nprocs * ncells_per_proc /= ncells) then
+    if (rank == 0) then
+        write(*,'("ERROR: Number of cells does not divide by number of processors!")')
+        write(*,'("NCELLS =,"i4)') ncells
+        write(*,'("NPROCS =,"i4)') nprocs
+        write(*,'("NCELLS_PER_PROC =,"i4)') ncells_per_proc
+    end if
+    call MPI_ABORT(MPI_COMM_WORLD, 0, status)
+end if
+
+! For now, serial only
+idL = ncells_per_proc*rank + 1
+idR = ncells_per_proc*(rank+1)
+
+write(*,'("Processor ",i2,":: idL = ",i4,", idR = ",i4)') rank, idL, idR
+
 ! Allocate arrays from 0 to ncells+1 to allow for ghosts/boundaries
-allocate(x(0:ncells+1)); x = 0.0
+allocate(x(idL-1:idR+1)); x = 0.0
 
-allocate(density(0:ncells+1)); density = 0.0
-allocate(momentum(0:ncells+1)); momentum = 0.0
-allocate(energy(0:ncells+1)); energy = 0.0
+allocate(density(idL-1:idR+1)); density = 0.0
+allocate(momentum(idL-1:idR+1)); momentum = 0.0
+allocate(energy(idL-1:idR+1)); energy = 0.0
 
-allocate(density_f(ncells)); density_f = 0.0
-allocate(momentum_f(ncells)); momentum_f = 0.0
-allocate(energy_f(ncells)); energy_f = 0.0
+allocate(density_f(idL:idR)); density_f = 0.0
+allocate(momentum_f(idL:idR)); momentum_f = 0.0
+allocate(energy_f(idL:idR)); energy_f = 0.0
 
-allocate(pressure(0:ncells+1)); pressure = 0.0
-allocate(velocity(0:ncells+1)); velocity = 0.0
+allocate(pressure(idL-1:idR+1)); pressure = 0.0
+allocate(velocity(idL-1:idR+1)); velocity = 0.0
 
 ! Initial test - set Sod problem
 uL = 0.0
@@ -81,15 +121,17 @@ t_end = 0.25
 
 ! Set cell size (uniform mesh)
 dx = L/ncells
-write(*,'("Number of cells = ",i4," => cell size = ",f7.3,"cm")') ncells, dx
+if (rank == 0) then
+    write(*,'(/"Total number of cells = ",i4," => cell size = ",f7.3,"cm")') ncells, dx
+end if
 
 ! Set coordinates
-do i = 1, ncells+1
+do i = idL, idR+1
     x(i) = (i-0.5) * dx
 end do
 
 ! Set initial density and pressure fields
-do i = 1, ncells+1
+do i = idL, idR
     xupper = x(i) + dx/2.0
     if (xupper <= x0) then
         density(i) = rhoL
@@ -106,38 +148,55 @@ do i = 1, ncells+1
     energy(i) = density(i)*(0.5*velocity(i)*velocity(i) + ein)
 end do
 
-! Set boundary cells - will need to change a little for parallel setup
-density(0) = density(1)
-momentum(0) = momentum(1)
-pressure(0) = pressure(1)
-velocity(0) = velocity(1)
-energy(0) = energy(1)
 
-density(ncells+1) = density(ncells)
-momentum(ncells+1) = momentum(ncells)
-pressure(ncells+1) = pressure(ncells)
-velocity(ncells+1) = velocity(ncells)
-energy(ncells+1) = energy(ncells)
+! Set boundary cells - will need to change a little for parallel setup
+if (idL == 1) then
+    print *, rank, "LEFT BOUNDARY"
+    density(idL-1) = density(idL)
+    momentum(idL-1) = momentum(idL)
+    pressure(idL-1) = pressure(idL)
+    velocity(idL-1) = velocity(idL)
+    energy(idL-1) = energy(idL)
+end if
+
+if (idR == ncells) then
+    print *, rank, "RIGHT BOUNDARY"
+    density(idR+1) = density(idR)
+    momentum(idR+1) = momentum(idR)
+    pressure(idR+1) = pressure(idR)
+    velocity(idR+1) = velocity(idR)
+    energy(idR+1) = energy(idR)
+end if
 
 t = 0.0
 step = 0
+time1 = MPI_WTIME()
 do while (.true.)
+    ! Update ghosts at start of timestep
+    call parallel_update(density, pressure, velocity, rank, nprocs)
+
     step = step + 1
     S = 0.0
-    do i = 1, ncells+1
+    do i = idL, idR+1
         a = sqrt((gamma*pressure(i))/density(i))
         S = max(S, a + velocity(i))
     end do
 
     dt = min(dtmax, cfl*dx/S)
+
+    ! Communicate smallest timestep to all processors
+    call MPI_ALLREDUCE(dt, dt, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD, status)
+
     if (dt <= 0.0) then
         write(*,'("ERROR: dt = ",es9.3)') dt
         stop
     end if
-    write(*,'("Step: ",i5,", t:",f7.3", dt:",es13.6)') step, t, dt
+    if (rank == 0) then
+        write(*,'("Step: ",i5,", t:",f7.3", dt:",es13.6)') step, t, dt
+    end if
 
     ! Get fluxes - need to include right-hand boundary cell
-    do i = 1, ncells+2
+    do i = idL, idR+1
         call get_flux_from_sample( &
             velocity(i-1), density(i-1), pressure(i-1), &
             velocity(i), density(i), pressure(i), gamma, model, &
@@ -148,7 +207,7 @@ do while (.true.)
     dtdx = dt/dx
 
     ! Perform Godunov update
-    do i = 1, ncells
+    do i = idL, idR
         ! Conservative update
         density(i) = density(i) + dtdx*(density_f(i) - density_f(i+1))
         momentum(i) = momentum(i) + dtdx*(momentum_f(i) - momentum_f(i+1))
@@ -168,17 +227,19 @@ do while (.true.)
         end if
     end do
 
-
     if (t > t_end) exit
     t = t + dt
 end do
+time2 = MPI_WTIME()
 
-! Output - Will need to formalise
-open(file="output.dat", newunit=fnum, status="replace")
-do i = 1, ncells+1
-    ein  = energy(i)/density(i) - 0.5*velocity(i)*velocity(i)
-    write(fnum,*) i, x(i), density(i), pressure(i), velocity(i), ein
-end do
+if (rank == 0) then
+    write(*,'("Completed ",i5, " steps in ",es13.6,"s")') step, time2 - time1
+end if
 
+call parallel_update(density, pressure, velocity, rank, nprocs)
+call do_text_output(x, density, pressure, velocity, energy, rank)
 
-end program cactaurF
+!call MPI_BARRIER(MPI_COMM_WORLD, status)
+call MPI_FINALIZE(status)
+
+end program cactuarF

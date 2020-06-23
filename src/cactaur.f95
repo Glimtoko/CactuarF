@@ -149,7 +149,7 @@ do i = idL, idR
 end do
 
 
-! Set boundary cells - will need to change a little for parallel setup
+! Set boundary cells - transmissive
 if (idL == 1) then
     print *, rank, "LEFT BOUNDARY"
     density(idL-1) = density(idL)
@@ -236,10 +236,9 @@ if (rank == 0) then
     write(*,'("Completed ",i5, " steps in ",es13.6,"s")') step, time2 - time1
 end if
 
-call parallel_update(density, pressure, velocity, rank, nprocs)
+! Final output
 call do_text_output(x, density, pressure, velocity, energy, rank)
 
-!call MPI_BARRIER(MPI_COMM_WORLD, status)
 call MPI_FINALIZE(status)
 
 end program cactuarF

@@ -15,5 +15,5 @@ Where:
 ## The Godunov Method
 The Godunov method allows us to discretise the conservative equations above to produce a mechanism to step through time to reach a solution. For a given cell at index i, the update to go from timestep n to timestep n+1 is:
 
-<img src="https://render.githubusercontent.com/render/math?math=\mathbf{U}_i^{n%2B1} =  \frac{\Delta t}{\Delta x}  \left ( \mathbf{F}_{i-\frac{1}{2}}^n - \mathbf{F}_{{i%2B\frac{1}{2}}^n \right )">
+<img src="https://render.githubusercontent.com/render/math?math=\mathbf{U}_i^{n%2B1} =  \frac{\Delta t}{\Delta x}  \left ( \mathbf{F}_{i-\frac{1}{2}}^n - \mathbf{F}_{i%2B\frac{1}{2}}^n \right )">
 

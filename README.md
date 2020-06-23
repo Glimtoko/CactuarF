@@ -12,7 +12,8 @@ Where:
 
 <img src="https://render.githubusercontent.com/render/math?math=\mathbf{F} = \begin{bmatrix}\rho u\\\rho u^2 %2B p\\u(E%2Bp)\end{bmatrix}">
 
-# Test an equation
-<img src="https://render.githubusercontent.com/render/math?math=e^{i %2B\pi} =x%2B1">
+## The Godunov Method
+The Godunov method allows us to discretise the conservative equations above to produce a mechanism to step through time to reach a solution. For a given cell at index i, the update to go from timestep n to timestep n+1 is:
 
-<img src="https://render.githubusercontent.com/render/math?math=\mathbf{U}_i^{n%2B1} =  \frac{\mathrm{d} t}{\mathrm{d} x}  \left ( \mathbf{F}_i^n - \mathbf{F}_{i%2B1}^n \right )">
+<img src="https://render.githubusercontent.com/render/math?math=\mathbf{U}_i^{n%2B1} =  \frac{\Delta t}{\Delta x}  \left ( \mathbf{F}_i^n - \mathbf{F}_{i%2B1}^n \right )">
+

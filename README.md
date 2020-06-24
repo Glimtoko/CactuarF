@@ -1,6 +1,7 @@
 # CactuarF
 1D First-order Godunov code - Fortran version
 
+# 1. Introduction
 ## The Euler Equations
 The aim of CactaurF is to provide a simple numerical solver for the Euler equations in 1 dimension. In conservative form, the Euler equations are:
 
@@ -48,3 +49,26 @@ Where:
 And S is the maximum wavespeed in the problem. For a 1D code like this, the maximum wavespeed is easy determined by averaging the interface wave speeds from the Riemann solutions. However, extended to multiple dimensions, such an averaging is unstable, so it is more common to use an estimate for S. In this code, the following estimate is used:
 
 <img src="https://render.githubusercontent.com/render/math?math=S^n_{\mathrm{max}} = \mathrm{max} \{|u^n_i| %2B a^n_i \}">
+
+Note that estimating S in this way can underestimate the wave speed, and thus create an unstabel timestep. This means that the range of values for C needs to be constrained below one. Testing has suggested that C in the following range is generally stable:
+
+<img src="https://render.githubusercontent.com/render/math?math=0 < C_{cfl} \le 0.7">
+
+## Boundary Conditions
+Boundary conditions in a 1D Godunov code are easy to deal with. Consider the following mesh:
+
+![Full 1D Mesh](/images/mesh1.png)
+
+Here the cells L and R represent the ends of the regular mesh, so for example in the standard Sod problem setup the left hand edge of cell L would be at x=0.0cm, and the right hand edge of cell R would be at x=1.0cm. We then simply extend the mesh by one cell in each direction, to Lb and Rb. The state in these cells is kept constant, and is initialised at t=0 depending on the nature (reflective or transmissive) of the boundary condition. Currently, CactuarF only supports transmissive boundary conditions, defined as:
+
+<img src="https://render.githubusercontent.com/render/math?math=\mathbf{U}(Lb) = \mathbf{U}(L)">
+
+and,
+
+<img src="https://render.githubusercontent.com/render/math?math=\mathbf{U}(Rb) = \mathbf{U}(R)">
+
+# 2. The CactuarF code
+## Parallelism
+Parallelising a 1D code is extremely easy. First of all, we divide the mesh into N sections, where the first section (numbered 0 by convention) corresponds to the left-hand end of the mesh, and the Nth section (numbered N-1) corresponds to the right-hand end of the mesh. For example for N=3 we would have:
+
+![Parallel 1D Mesh](/images/mesh2.png)

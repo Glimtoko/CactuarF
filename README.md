@@ -67,8 +67,18 @@ and,
 
 <img src="https://render.githubusercontent.com/render/math?math=\mathbf{U}(Rb) = \mathbf{U}(R)">
 
+These boundary cells are used to determine the left-hand and right-hand fluxes on cells L and R respectively.
+
 # 2. The CactuarF code
 ## Parallelism
 Parallelising a 1D code is extremely easy. First of all, we divide the mesh into N sections, where the first section (numbered 0 by convention) corresponds to the left-hand end of the mesh, and the Nth section (numbered N-1) corresponds to the right-hand end of the mesh. For example for N=3 we would have:
 
 ![Parallel 1D Mesh](/images/mesh2.png)
+
+Here Lb and Rb correspond to boundary condition cells as before. We have gained new boundary cells labelled Lg and Rg, however, and these are known as "ghost" cells. They will work in a similar way to the boundary condition cells, so that, for example, on mesh section 1 the left-hand flux on L will be determined using Lg. Where things differ is how the values in cells Lg and Rg are determined. These cannot simply be set at time zero, as they correspond to information which changes as time progresses. Instead, they are set via communication from neighbouring processors. This is illustrated in the following image:
+
+![Parallel 1D Comms](/images/mesh5.png)
+
+I.e. on a given processor n, the value of Lg comes from cell R on processor (n-1), and the value of Rg comes from cell L on processor (n+1). This is a very simple scheme to encode in MPI, and requires a total of 6 sends and 6 receives on processors 1 < n < (N-2), and 3 sends and 3 receives on processors 0 and (N-1). These values come from the need to communicate the entire vector **W** of primitive values.
+
+In CactaurF, parallel communication is handled in the *comms.f95* source file.

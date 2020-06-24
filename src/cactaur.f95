@@ -8,11 +8,16 @@ use text_output
 use mpi
 implicit none
 
-integer(kind=int32) :: ncells       ! Number of cells in problem
-real(kind=real64) :: L = 1.0        ! Length of domain
-real(kind=real64) :: x0 = 0.5       ! Position of interface/membrane
-real(kind=real64) :: gamma = 1.4    ! EoS parameter, ratio of specific heats
+integer(kind=int32) :: ncells = 30000 ! Number of cells in problem
+real(kind=real64) :: L = 1.0          ! Length of domain
+real(kind=real64) :: x0 = 0.5         ! Position of interface/membrane
+real(kind=real64) :: gamma = 1.4      ! EoS parameter, ratio of specific heats
 real(kind=real64) :: dtmax = 0.1
+integer(kind=int32) :: solver = 1
+real(kind=real64) :: CFL = 0.6        ! CFL parameter (0 < CFL <= 1.0)
+character(len=40) :: input_file
+
+integer(kind=int32) :: control
 
 ! Mesh data
 real(kind=real64), dimension(:), allocatable :: x   ! Mesh coordinates
@@ -40,7 +45,6 @@ integer(kind=int32) :: i    ! General loop parameters
 real(kind=real64) :: t      ! Current time
 real(kind=real64) :: a      ! Sound speed
 real(kind=real64) :: S      ! Characteristic wave speed
-real(kind=real64) :: CFL    ! CFL parameter (0 < CFL <= 1.0)
 real(kind=real64) :: dt     ! Timestep from CFL condition
 real(kind=real64) :: dtdx   ! dt/dx, used in Godunov update
 integer(kind=int32) :: step ! Current step
@@ -66,9 +70,40 @@ real(kind=real64) :: xupper             ! Cell boundary. Used in setup
 
 procedure(riemann_API), pointer :: model
 
-model => riemann_TSRS
-ncells = 30000
-CFL = 0.6
+namelist /input/ncells, L, x0, gamma, dtmax, solver, CFL
+
+! Read input file
+call get_command_argument(number=1, value=input_file, status=status)
+
+if (status == 0) then
+    ! Valid input file, so read it
+    open(newunit=control, file=input_file)
+    read(control, nml=input)
+elseif (status < 0) then
+    ! Invalid filename
+    print *, "Error: Invalid input file name (probably > 40 characters)"
+    call MPI_ABORT(MPI_COMM_WORLD, 0, status)
+else
+    ! No input file
+    write(*,'("Using defualt setup")')
+end if
+
+write(*, nml=input)
+
+! Set Riemann solver
+select case(solver)
+    case(1)
+        model => riemann_PVRS1
+    case(2)
+        model => riemann_PVRS2
+    case(3)
+        model => riemann_TSRS
+    case(4)
+        model => riemann_TRRS
+    case default
+        print *, "Invalid value for SOLVER"
+        call MPI_ABORT(MPI_COMM_WORLD, 0, status)
+end select
 
 ! Initialise MPI
 call MPI_Init(status)

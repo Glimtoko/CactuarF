@@ -37,4 +37,14 @@ Where, for an **ideal gas**, e is given by:
 
 <img src="https://render.githubusercontent.com/render/math?math=e = \frac{p}{\rho(\gamma - 1)}">
 
-Where gamma is the ratio of specific heats.
+Where gamma is the ratio of specific heats. Note that this scheme is stable only where the timestep obeys the relation:
+
+<img src="https://render.githubusercontent.com/render/math?math=\Delta T = \frac{C_{cfl}\Delta x}{S^n_{max}}">
+
+Where:
+
+<img src="https://render.githubusercontent.com/render/math?math=0 < C_{cfl} \le 1">
+
+And S is the maximum wavespeed in the problem. For a 1D code like this, the maximum wavespeed is easy determined by averaging the interface wave speeds from the Riemann solutions. However, extended to multiple dimensions, such an averaging is unstable, so it is more common to use an estimate for S. In this code, the following estimate is used:
+
+<img src="https://render.githubusercontent.com/render/math?math=S^n_{\mathrm{max}} = \mathrm{max} \{|u^n_i| %2B a^n_i \}">

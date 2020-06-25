@@ -1,6 +1,8 @@
 # Fortran compiler and base flags
 FC := mpif90
-FFLAGS := -g
+#FFLAGS := -g
+#-fcheck=all -finit-real=inf -ffpe-trap=invalid,zero,denormal,overflow,underflow --warn-all
+FFLAGS := -O3 -fno-gcse
 
 # Object list
 all_objects =  \

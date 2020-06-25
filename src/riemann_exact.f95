@@ -19,7 +19,7 @@ use riemann_sampler
 implicit none
 
 ! Tolerance for iterative solver
-real(kind=real64), parameter :: TOL = 1.0e-6
+real(kind=real64), parameter :: TOL = 1.0e-6_real64
 
 ! Maximum number of iterations
 integer(kind=int32), parameter :: MAXITER = 1000
@@ -158,6 +158,7 @@ real(kind=real64) :: fdash  ! Value of f' evaluated on both sides
 ! f = f(pL, ...) + f(pR, ...) + du
 ! f' = f'(pL, ...) + f'(pR, ...)
 
+du = uR - uL
 f = fk(P0, PL, rhoL, gamma) + fk(P0, PR, rhoR, gamma) + du
 fdash = fdashk(P0, PL, rhoL, gamma) + fdashk(P0, PR, rhoR, gamma)
 

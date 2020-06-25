@@ -76,11 +76,6 @@ real(kind=real64), intent(in) :: P          ! Pressure in star region
 real(kind=real64), intent(in) :: Pk, rhok   ! State on boundary
 real(kind=real64), intent(in) :: gamma      ! EoS parameter
 
-! Local data
-real(kind=real64) :: f  ! Gamma ratio
-
-f = (gamma - 1.0)/(gamma + 1.0)
-
 rhostar_rarefaction = rhok * (P/Pk)**(1.0/gamma)
 
 end function rhostar_rarefaction

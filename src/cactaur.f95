@@ -11,12 +11,12 @@ use mpi
 implicit none
 
 integer(kind=int32) :: ncells = 30000 ! Number of cells in problem
-real(kind=real64) :: L = 1.0          ! Length of domain
-real(kind=real64) :: x0 = 0.5         ! Position of interface/membrane
-real(kind=real64) :: gamma = 1.4      ! EoS parameter, ratio of specific heats
-real(kind=real64) :: dtmax = 0.1
+real(kind=real64) :: L = 1.0_real64   ! Length of domain
+real(kind=real64) :: x0 = 0.5_real64  ! Position of interface/membrane
+real(kind=real64) :: gamma = 1.4_real64 ! EoS parameter, ratio of specific heats
+real(kind=real64) :: dtmax = 0.1_real64
 integer(kind=int32) :: solver = 1
-real(kind=real64) :: CFL = 0.6        ! CFL parameter (0 < CFL <= 1.0)
+real(kind=real64) :: CFL = 0.6_real64 ! CFL parameter (0 < CFL <= 1.0)
 character(len=40) :: input_file
 
 integer(kind=int32) :: control
@@ -147,9 +147,9 @@ ncells_per_proc = ncells / nprocs
 if (nprocs * ncells_per_proc /= ncells) then
     if (rank == 0) then
         write(*,'("ERROR: Number of cells does not divide by number of processors!")')
-        write(*,'("NCELLS =,"i4)') ncells
-        write(*,'("NPROCS =,"i4)') nprocs
-        write(*,'("NCELLS_PER_PROC =,"i4)') ncells_per_proc
+        write(*,'("NCELLS =,"i6)') ncells
+        write(*,'("NPROCS =,"i6)') nprocs
+        write(*,'("NCELLS_PER_PROC =,"i6)') ncells_per_proc
     end if
     call MPI_ABORT(MPI_COMM_WORLD, 0, status)
 end if
@@ -158,7 +158,7 @@ end if
 idL = ncells_per_proc*rank + 1
 idR = ncells_per_proc*(rank+1)
 
-write(*,'("Processor ",i2,":: idL = ",i4,", idR = ",i4)') rank, idL, idR
+write(*,'("Processor ",i2,":: idL = ",i6,", idR = ",i6)') rank, idL, idR
 
 ! Allocate arrays from 0 to ncells+1 to allow for ghosts/boundaries
 allocate(x(idL-1:idR+1)); x = 0.0
@@ -167,9 +167,9 @@ allocate(density(idL-1:idR+1)); density = 0.0
 allocate(momentum(idL-1:idR+1)); momentum = 0.0
 allocate(energy(idL-1:idR+1)); energy = 0.0
 
-allocate(density_f(idL:idR)); density_f = 0.0
-allocate(momentum_f(idL:idR)); momentum_f = 0.0
-allocate(energy_f(idL:idR)); energy_f = 0.0
+allocate(density_f(idL:idR+1)); density_f = 0.0
+allocate(momentum_f(idL:idR+1)); momentum_f = 0.0
+allocate(energy_f(idL:idR+1)); energy_f = 0.0
 
 allocate(pressure(idL-1:idR+1)); pressure = 0.0
 allocate(velocity(idL-1:idR+1)); velocity = 0.0
@@ -186,7 +186,7 @@ t_end = 0.25
 ! Set cell size (uniform mesh)
 dx = L/ncells
 if (rank == 0) then
-    write(*,'(/"Total number of cells = ",i4," => cell size = ",f7.3,"cm")') ncells, dx
+    write(*,'(/"Total number of cells = ",i6," => cell size = ",f13.9,"cm")') ncells, dx
 end if
 
 ! Set coordinates
@@ -256,7 +256,7 @@ do while (.true.)
         stop
     end if
     if (rank == 0) then
-        write(*,'("Step: ",i5,", t:",f7.3", dt:",es13.6)') step, t, dt
+        write(*,'("Step: ",i6,", t:",es13.6", dt:",es13.6)') step, t, dt
     end if
 
     ! Get fluxes - need to include right-hand boundary cell
@@ -293,11 +293,13 @@ do while (.true.)
 
     if (t > t_end) exit
     t = t + dt
+
+!     if (step > 2) exit
 end do
 time2 = MPI_WTIME()
 
 if (rank == 0) then
-    write(*,'("Completed ",i5, " steps in ",es13.6,"s")') step, time2 - time1
+    write(*,'("Completed ",i6, " steps in ",es13.6,"s")') step, time2 - time1
 end if
 
 ! Final output

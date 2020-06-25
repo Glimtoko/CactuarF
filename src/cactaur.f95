@@ -1,9 +1,11 @@
 program cactuarF
 use iso_fortran_env, only: int32, real64
-use riemann_solvers
+use riemann
 use flux_functions
 use parallel_comms
 use text_output
+
+use abort_mod
 
 use mpi
 implicit none
@@ -72,6 +74,28 @@ procedure(riemann_API), pointer :: model
 
 namelist /input/ncells, L, x0, gamma, dtmax, solver, CFL
 
+! Initialise MPI
+call MPI_Init(status)
+
+! Get number of processors, and this processor's rank
+call MPI_Comm_Size(MPI_COMM_WORLD, nprocs, status)
+call MPI_Comm_Rank(MPI_COMM_WORLD, rank, status)
+
+if (rank == 0) then
+     write(*,'("          \ | /        ")')
+     write(*,'("          /¯¯¯\        ")')
+     write(*,'("  /¯\    | o o |       ")')
+     write(*,'("  |  |   |  0  |       _________                __                    ___________")')
+     write(*,'("  |  |___|     |___    \_   ___ \_____    _____/  |_ __ _______ ______\_   _____/")')
+     write(*,'("  \_____       ___ \   /    \  \/\__  \ _/ ___\   __\  |  \__  \\_  __ \    __)  ")')
+     write(*,'("         |     |  | |  \     \____/ __ \\  \___|  | |  |  // __ \|  | \/     \   ")')
+     write(*,'("     /¯¯¯      |   \/   \______  (____  /\___  >__| |____/(____  /__|  \___  /   ")')
+     write(*,'("     |  |¯¯¯|  |               \/     \/     \/                \/          \/  ")')
+     write(*,'("     |  |   |  |____   ")')
+     write(*,'("     \_/     \______)  ")')
+    write(*,'("This is CactuarF running on ",i2," processors")') nprocs
+end if
+
 ! Read input file
 call get_command_argument(number=1, value=input_file, status=status)
 
@@ -81,37 +105,42 @@ if (status == 0) then
     read(control, nml=input)
 elseif (status < 0) then
     ! Invalid filename
-    print *, "Error: Invalid input file name (probably > 40 characters)"
-    call MPI_ABORT(MPI_COMM_WORLD, 0, status)
+    call abort("Invalid input file name (probably > 40 characters)")
 else
     ! No input file
     write(*,'("Using defualt setup")')
 end if
 
-write(*, nml=input)
+if (rank == 0) write(*, nml=input)
+
+! Check input sanity
+if (CFL <= 0.0 .or. CFL > 1.0) then
+    call abort("CFL must be in the range 0 < CFL <= 1")
+else if (CFL > 0.7) then
+    write(*,'("Warning, CFL greater than 0.7 is likely to lead to an")')
+    write(*,'("unstable solution.")')
+end if
 
 ! Set Riemann solver
 select case(solver)
     case(1)
-        model => riemann_PVRS1
+        write(*,'("Using iterative Riemann solver")')
+        model => riemann_iterative
     case(2)
-        model => riemann_PVRS2
+        write(*,'("Using PVRS solver (first form)")')
+        model => riemann_PVRS1
     case(3)
-        model => riemann_TSRS
+        write(*,'("Using PVRS solver (second form)")')
+        model => riemann_PVRS2
     case(4)
+        write(*,'("Using TSRS solver")')
+        model => riemann_TSRS
+    case(5)
+        write(*,'("Using TRRS solver")')
         model => riemann_TRRS
     case default
-        print *, "Invalid value for SOLVER"
-        call MPI_ABORT(MPI_COMM_WORLD, 0, status)
+        call abort("Invalid value for SOLVER")
 end select
-
-! Initialise MPI
-call MPI_Init(status)
-
-! Get number of processors, and this processor's rank
-call MPI_Comm_Size(MPI_COMM_WORLD, nprocs, status)
-call MPI_Comm_Rank(MPI_COMM_WORLD, rank, status)
-if (rank == 0) write(*,'("This is CactuarF running on ",i2," processors")') nprocs
 
 ! Get cells per processor, and ensure this is an integer
 ncells_per_proc = ncells / nprocs

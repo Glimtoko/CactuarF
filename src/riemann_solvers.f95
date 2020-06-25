@@ -1,26 +1,9 @@
 module riemann_solvers
 use iso_fortran_env, only: int32, real64
-use riemann_sampler
+use riemann_api_mod
 implicit none
 ! Since Fortran cannot elegantly return more than one value from a function, all
 ! of these routines will be subroutines, not functions
-
-interface
-    subroutine riemann_API( &
-        uL, rhoL, PL, uR, rhoR, PR, gamma, &
-        Pstar, ustar, rhoLstar, rhoRstar, exact &
-    )
-    use iso_fortran_env, only: real64
-    ! Inputs
-    real(kind=real64), intent(in) :: uL, rhoL, PL   ! Left-hand state
-    real(kind=real64), intent(in) :: uR, rhoR, PR   ! Right-hand state
-    real(kind=real64), intent(in) :: gamma   ! EoS parameter
-
-    ! Outputs
-    real(kind=real64), intent(out) :: Pstar, ustar, rhoLstar, rhoRstar
-    logical, intent(out) :: exact
-    end subroutine
-end interface
 
 contains
 subroutine riemann_PVRS1( &
@@ -189,49 +172,6 @@ rhoLstar = rhoL * ((Pstar/PL + f)/(f*Pstar/PL + 1))
 rhoRstar = rhoR * ((Pstar/PR + f)/(f*Pstar/PR + 1))
 
 end subroutine riemann_TSRS
-
-! subroutine solve( &
-!     uL, rhoL, PL, uR, rhoR, PR, gamma, model, &
-!     rho, P, u, E &
-! )
-! ! Generate a solution in terms of primative variables for the Riemann problem
-! ! represented by (uL, rhoL, PL) and (uR, rhoR, PR), using a provided Riemann
-! ! solver (model).
-!
-! ! Inputs
-! real(kind=real64), intent(in) :: uL, rhoL, PL   ! Left-hand state
-! real(kind=real64), intent(in) :: uR, rhoR, PR   ! Right-hand state
-! real(kind=real64), intent(in) :: gamma   ! EoS parameter
-! procedure(riemann_API), pointer, intent(in) :: model
-!
-! ! Outputs
-! real(kind=real64), intent(out) :: rho, P, u, E
-!
-! ! Local data
-! real(kind=real64) :: Pstar, ustar       ! Output from Riemann solver
-! real(kind=real64) :: rhoLstar, rhoRstar ! Output from approximate Rieman solver
-! logical :: exact                        ! Is the Riemann solver exact?
-!
-! real(kind=real64) :: ein                ! Internal energy for E calculation
-!
-! ! Get P, u and maybe rho from Riemann solver
-! call model(uL, rhoL, PL, uR, rhoR, PR, gamma, Pstar, ustar, rhoLstar, rhoRstar, exact)
-!
-!
-! ! Sample the solution at S = x/t = 0.0
-! call sample( &
-!     Pstar, ustar, rhoLstar, rhoRstar, &
-!     uL, rhoL, PL, &
-!     uR, rhoR, PR, &
-!     gamma, exact, &
-!     rho, P, u &
-! )
-!
-! ! Calculate energy
-! ein = P/((gamma - 1.0)*rho)
-! E = rho * (0.5*u*u + e)
-!
-! end subroutine solve
 
 
 end module riemann_solvers

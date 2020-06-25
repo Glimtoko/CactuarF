@@ -4,8 +4,11 @@ FFLAGS := -g
 
 # Object list
 all_objects =  \
+	abort.o \
+	riemann_api.o \
 	riemann_sampler.o \
 	riemann_solvers.o \
+	riemann_exact.o \
 	riemann.o \
 	flux.o \
 	comms.o \
@@ -107,6 +110,10 @@ install: cactuarf
 
 
 # Dependencies
+riemann_solvers.o: riemann_api.o
+
+riemann.o: riemann_solvers.o riemann_sampler.o riemann_exact.o riemann_api.o
+
 prog.o: data.o memory_manipulation.o mesh_reader.o sod.o lagstep_fi.o text_output.o
 
 sod.o: data.o	# For input and file unit

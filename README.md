@@ -9,7 +9,7 @@ $\mathbf{U}_t + \mathbf{F}(\mathbf{U})_x = 0$
 
 Where:
 
-$\mathbf{U} = \begin{bmatrix}\rho\\\rho u\\E\end{bmatrix}$
+$$\mathbf{U} = \begin{bmatrix}\rho\\\rho u\\E\end{bmatrix}$$
 
 $\mathbf{F} = \begin{bmatrix}\rho u\\\rho u^2 + p\\u(E+p)\end{bmatrix}$
 

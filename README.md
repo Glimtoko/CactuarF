@@ -16,11 +16,11 @@ $$\mathbf{F} = \begin{bmatrix}\rho u \\ \rho u^2 + p\\ \u(E+p)\end{bmatrix}$$
 ## The Godunov Method
 The Godunov method allows us to discretise the conservative equations above to produce a mechanism to step through time to reach a solution. For a given cell at index i, the update to go from timestep n to timestep n+1 is:
 
-$\mathbf{U}_i^{n+1} =  \frac{\Delta t}{\Delta x}  \left ( \mathbf{F}_{i-\frac{1}{2}} - \mathbf{F}_{i+\frac{1}{2}} \right )$
+$$\mathbf{U}_i^{n+1} =  \frac{\Delta t}{\Delta x}  \left ( \mathbf{F}_{i-\frac{1}{2}} - \mathbf{F}_{i+\frac{1}{2}} \right )$$
 
 Where the intercell numerical flux (F) is given by:
 
-$\mathbf{F}_{i+\frac{1}{2}} = \mathbf{F}(\mathbf{U}_{i+\frac{1}{2}}(0))$
+$$\mathbf{F}_{i+\frac{1}{2}} = \mathbf{F}(\mathbf{U}_{i+\frac{1}{2}}(0))$$
 
 To determine these fluxes, we construct Riemann problems on each cell boundary, and solve them at the point:
 

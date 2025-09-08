@@ -9,50 +9,50 @@ $\mathbf{U}_t + \mathbf{F}(\mathbf{U})_x = 0$
 
 Where:
 
-<img src="https://render.githubusercontent.com/render/math?math=\mathbf{U} = \begin{bmatrix}\rho\\\rho u\\E\end{bmatrix}">
+$\mathbf{U} = \begin{bmatrix}\rho\\\rho u\\E\end{bmatrix}$
 
-<img src="https://render.githubusercontent.com/render/math?math=\mathbf{F} = \begin{bmatrix}\rho u\\\rho u^2 %2B p\\u(E%2Bp)\end{bmatrix}">
+$\mathbf{F} = \begin{bmatrix}\rho u\\\rho u^2 + p\\u(E+p)\end{bmatrix}$
 
 ## The Godunov Method
 The Godunov method allows us to discretise the conservative equations above to produce a mechanism to step through time to reach a solution. For a given cell at index i, the update to go from timestep n to timestep n+1 is:
 
-<img src="https://render.githubusercontent.com/render/math?math=\mathbf{U}_i^{n%2B1} =  \frac{\Delta t}{\Delta x}  \left ( \mathbf{F}_{i-\frac{1}{2}} - \mathbf{F}_{i%2B\frac{1}{2}} \right )">
+$\mathbf{U}_i^{n+1} =  \frac{\Delta t}{\Delta x}  \left ( \mathbf{F}_{i-\frac{1}{2}} - \mathbf{F}_{i+\frac{1}{2}} \right )$
 
 Where the intercell numerical flux (F) is given by:
 
-<img src="https://render.githubusercontent.com/render/math?math=\mathbf{F}_{i%2B\frac{1}{2}} = \mathbf{F}(\mathbf{U}_{i%2B\frac{1}{2}}(0))">
+$\mathbf{F}_{i+\frac{1}{2}} = \mathbf{F}(\mathbf{U}_{i+\frac{1}{2}}(0))$
 
 To determine these fluxes, we construct Riemann problems on each cell boundary, and solve them at the point:
 
-<img src="https://render.githubusercontent.com/render/math?math=S = \frac{x}{t} = 0">
+$S = \frac{x}{t} = 0$
 
 Note that Riemann solvers generally work in terms of the vector of primitive variables:
 
-<img src="https://render.githubusercontent.com/render/math?math=\mathbf{W} =  \begin{bmatrix}\rho\\u\\p\end{bmatrix}">
+$\mathbf{W} =  \begin{bmatrix}\rho\\u\\p\end{bmatrix}$
 
 We need to convert this vector into the vector of conserved quantities, F. For density and momemtum, this is trivial. For energy, we use:
 
-<img src="https://render.githubusercontent.com/render/math?math=E = \rho(\frac{1}{2}u^2 %2B e)">
+$E = \rho(\frac{1}{2}u^2 + e)$
 
 Where, for an **ideal gas**, e is given by:
 
-<img src="https://render.githubusercontent.com/render/math?math=e = \frac{p}{\rho(\gamma - 1)}">
+$e = \frac{p}{\rho(\gamma - 1)}$
 
 Where gamma is the ratio of specific heats. Note that this scheme is stable only where the timestep obeys the relation:
 
-<img src="https://render.githubusercontent.com/render/math?math=\Delta T = \frac{C_{cfl}\Delta x}{S^n_{max}}">
+$\Delta T = \frac{C_{cfl}\Delta x}{S^n_{max}}$
 
 Where:
 
-<img src="https://render.githubusercontent.com/render/math?math=0 < C_{cfl} \le 1">
+$0 < C_{cfl} \le 1$
 
 And S is the maximum wavespeed in the problem. For a 1D code like this, the maximum wavespeed is easy determined by averaging the interface wave speeds from the Riemann solutions. However, extended to multiple dimensions, such an averaging is unstable, so it is more common to use an estimate for S. In this code, the following estimate is used:
 
-<img src="https://render.githubusercontent.com/render/math?math=S^n_{\mathrm{max}} = \mathrm{max} \{|u^n_i| %2B a^n_i \}">
+$S^n_{\mathrm{max}} = \mathrm{max} \{|u^n_i| + a^n_i \}$
 
 Note that estimating S in this way can underestimate the wave speed, and thus create an unstabel timestep. This means that the range of values for C needs to be constrained below one. Testing has suggested that C in the following range is generally stable:
 
-<img src="https://render.githubusercontent.com/render/math?math=0 < C_{cfl} \le 0.7">
+$0 < C_{cfl} \le 0.7$
 
 ## Boundary Conditions
 Boundary conditions in a 1D Godunov code are easy to deal with. Consider the following mesh:
@@ -61,11 +61,11 @@ Boundary conditions in a 1D Godunov code are easy to deal with. Consider the fol
 
 Here the cells L and R represent the ends of the regular mesh, so for example in the standard Sod problem setup the left hand edge of cell L would be at x=0.0cm, and the right hand edge of cell R would be at x=1.0cm. We then simply extend the mesh by one cell in each direction, to Lb and Rb. The state in these cells is kept constant, and is initialised at t=0 depending on the nature (reflective or transmissive) of the boundary condition. Currently, CactuarF only supports transmissive boundary conditions, defined as:
 
-<img src="https://render.githubusercontent.com/render/math?math=\mathbf{U}(Lb) = \mathbf{U}(L)">
+$\mathbf{U}(Lb) = \mathbf{U}(L)$
 
 and,
 
-<img src="https://render.githubusercontent.com/render/math?math=\mathbf{U}(Rb) = \mathbf{U}(R)">
+$\mathbf{U}(Rb) = \mathbf{U}(R)$
 
 These boundary cells are used to determine the left-hand and right-hand fluxes on cells L and R respectively.
 

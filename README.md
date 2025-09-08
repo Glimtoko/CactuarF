@@ -28,7 +28,7 @@ $S = \frac{x}{t} = 0$
 
 Note that Riemann solvers generally work in terms of the vector of primitive variables:
 
-$\mathbf{W} =  \begin{bmatrix}\rho\\u\\p\end{bmatrix}$
+$$\mathbf{W} =  \begin{bmatrix}\rho\\u\\p\end{bmatrix}$$
 
 We need to convert this vector into the vector of conserved quantities, F. For density and momemtum, this is trivial. For energy, we use:
 

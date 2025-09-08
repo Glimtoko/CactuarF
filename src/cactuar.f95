@@ -1,14 +1,14 @@
 program cactuarF
 use iso_fortran_env, only: int32, real64
-use riemann
-use flux_functions
-use parallel_comms
-use text_output
+use riemann!, only: solve
+use flux_functions, only: get_flux_from_sample
+use parallel_comms, only: parallel_update
+use text_output, only: do_text_output
 
-use abort_mod
+use abort_mod, only: abort
 
 use mpi
-implicit none
+implicit none (type, external)
 
 integer(kind=int32) :: ncells = 30000 ! Number of cells in problem
 real(kind=real64) :: L = 1.0_real64   ! Length of domain
@@ -82,17 +82,17 @@ call MPI_Comm_Size(MPI_COMM_WORLD, nprocs, status)
 call MPI_Comm_Rank(MPI_COMM_WORLD, rank, status)
 
 if (rank == 0) then
-     write(*,'("          \ | /        ")')
-     write(*,'("          /¯¯¯\        ")')
-     write(*,'("  /¯\    | o o |       ")')
-     write(*,'("  |  |   |  0  |       _________                __                    ___________")')
-     write(*,'("  |  |___|     |___    \_   ___ \_____    _____/  |_ __ _______ ______\_   _____/")')
-     write(*,'("  \_____       ___ \   /    \  \/\__  \ _/ ___\   __\  |  \__  \\_  __ \    __)  ")')
-     write(*,'("         |     |  | |  \     \____/ __ \\  \___|  | |  |  // __ \|  | \/     \   ")')
-     write(*,'("     /¯¯¯      |   \/   \______  (____  /\___  >__| |____/(____  /__|  \___  /   ")')
-     write(*,'("     |  |¯¯¯|  |               \/     \/     \/                \/          \/  ")')
-     write(*,'("     |  |   |  |____   ")')
-     write(*,'("     \_/     \______)  ")')
+     write(*,'("         \ | /        ")')
+     write(*,'("         /¯¯¯\        ")')
+     write(*,'(" /¯\    | o o |       ")')
+     write(*,'(" |  |   |  0  |       _________                __                    ___________")')
+     write(*,'(" |  |___|     |___    \_   ___ \_____    _____/  |_ __ _______ ______\_   _____/")')
+     write(*,'(" \_____       ___ \   /    \  \/\__  \ _/ ___\   __\  |  \__  \\_  __ \    __)  ")')
+     write(*,'("        |     |  | |  \     \____/ __ \\  \___|  | |  |  // __ \|  | \/     \   ")')
+     write(*,'("    /¯¯¯      |   \/   \______  (____  /\___  >__| |____/(____  /__|  \___  /   ")')
+     write(*,'("    |  |¯¯¯|  |               \/     \/     \/                \/          \/  ")')
+     write(*,'("    |  |   |  |____   ")')
+     write(*,'("    \_/     \______)  ")')
     write(*,'("This is CactuarF running on ",i2," processors")') nprocs
 end if
 

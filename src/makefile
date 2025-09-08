@@ -15,7 +15,7 @@ all_objects =  \
 	flux.o \
 	comms.o \
 	text_output.o \
-	cactaur.o
+	cactuar.o
 
 # Installation directory
 INSTALL_DIR := /prod/CactaurF/bin/

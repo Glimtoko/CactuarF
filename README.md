@@ -3,7 +3,7 @@
 
 # 1. Introduction
 ## The Euler Equations
-The aim of CactaurF is to provide a simple numerical solver for the Euler equations in 1 dimension. In conservative form, the Euler equations are:
+The aim of CactuarF is to provide a simple numerical solver for the Euler equations in 1 dimension. In conservative form, the Euler equations are:
 
 $$\mathbf{U}_t + \mathbf{F}(\mathbf{U})_x = 0$$
 
@@ -81,4 +81,4 @@ Here Lb and Rb correspond to boundary condition cells as before. We have gained 
 
 I.e. on a given processor n, the value of Lg comes from cell R on processor (n-1), and the value of Rg comes from cell L on processor (n+1). This is a very simple scheme to encode in MPI, and requires a total of 6 sends and 6 receives on processors 1 < n < (N-2), and 3 sends and 3 receives on processors 0 and (N-1). These values come from the need to communicate the entire vector **W** of primitive values.
 
-In CactaurF, parallel communication is handled in the *comms.f95* source file.
+In CactuarF, parallel communication is handled in the *comms.f95* source file.

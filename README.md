@@ -9,9 +9,9 @@ $\mathbf{U}_t + \mathbf{F}(\mathbf{U})_x = 0$
 
 Where:
 
-$$\mathbf{U} = \begin{bmatrix}\rho \\ \rho u\\ \E\end{bmatrix}$$
+$$\mathbf{U} = \begin{bmatrix}\rho \\\ \rho u \\\ E\end{bmatrix}$$
 
-$$\mathbf{F} = \begin{bmatrix}\rho u \\ \rho u^2 + p\\ \u(E+p)\end{bmatrix}$$
+$$\mathbf{F} = \begin{bmatrix}\rho u \\\ \rho u^2 + p\\\ u(E+p)\end{bmatrix}$$
 
 ## The Godunov Method
 The Godunov method allows us to discretise the conservative equations above to produce a mechanism to step through time to reach a solution. For a given cell at index i, the update to go from timestep n to timestep n+1 is:
@@ -28,7 +28,7 @@ $S = \frac{x}{t} = 0$
 
 Note that Riemann solvers generally work in terms of the vector of primitive variables:
 
-$$\mathbf{W} =  \begin{bmatrix}\rho\\u\\p\end{bmatrix}$$
+$$\mathbf{W} =  \begin{bmatrix}\rho\\\u\\\p\end{bmatrix}$$
 
 We need to convert this vector into the vector of conserved quantities, F. For density and momemtum, this is trivial. For energy, we use:
 

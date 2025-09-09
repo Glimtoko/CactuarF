@@ -1,6 +1,8 @@
 module text_output
 use iso_fortran_env, only: int32, real64
-implicit none
+implicit none (type, external)
+private
+public :: do_text_output
 contains
 
 subroutine do_text_output(x, density, pressure, velocity, energy, rank)
@@ -23,7 +25,7 @@ integer(kind=int32), save :: filenumber = 1     ! File number
 character(len=40) :: filename_stub              ! Base of file name
 character(len=4) :: filenumber_str              ! File number as string (fXXX)
 character(len=4) :: rank_str                    ! Rank as string (rXXX)
-character(len=4) :: ext = ".dat"                ! Output file extension
+character(len=4), parameter :: ext = ".dat"     ! Output file extension
 integer(kind=int32) :: unitnum                  ! Output file unit
 
 ! Array bounds

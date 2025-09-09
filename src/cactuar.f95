@@ -152,9 +152,9 @@ ncells_per_proc = ncells / nprocs
 if (nprocs * ncells_per_proc /= ncells) then
     if (rank == 0) then
         write(*,'("ERROR: Number of cells does not divide by number of processors!")')
-        write(*,'("NCELLS =,"i6)') ncells
-        write(*,'("NPROCS =,"i6)') nprocs
-        write(*,'("NCELLS_PER_PROC =,"i6)') ncells_per_proc
+        write(*,'("NCELLS =",i6)') ncells
+        write(*,'("NPROCS =",i6)') nprocs
+        write(*,'("NCELLS_PER_PROC =",i6)') ncells_per_proc
     end if
     call MPI_ABORT(MPI_COMM_WORLD, 0, status)
 end if
@@ -261,7 +261,7 @@ do while (.true.)
         stop
     end if
     if (rank == 0) then
-        write(*,'("Step: ",i6,", t:",es13.6", dt:",es13.6)') step, t, dt
+        write(*,'("Step: ",i6,", t:",es13.6,", dt:",es13.6)') step, t, dt
     end if
 
     ! Get fluxes - need to include right-hand boundary cell

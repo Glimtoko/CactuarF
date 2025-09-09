@@ -1,8 +1,12 @@
 module abort_mod
 use iso_fortran_env, only: int32
 
-use mpi
-implicit none
+use mpi, only: MPI_ABORT, MPI_COMM_WORLD
+
+implicit none (type, external)
+
+private
+public :: abort
 
 contains
 
@@ -15,6 +19,6 @@ write(*,'(a)') reason
 
 call MPI_ABORT(MPI_COMM_WORLD, 0, status)
 
-end subroutine
+end subroutine abort
 
 end module abort_mod

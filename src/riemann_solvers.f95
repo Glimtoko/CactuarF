@@ -158,7 +158,7 @@ rho_bar = 0.5*(rhoL + rhoR)
 a_bar = 0.5*(aaL + aaR)
 
 Pguess = 0.5*(PL + PR) + 0.5*(uL - uR)*(rho_bar*a_bar)
-Pguess = max(Pguess, 0.0)
+Pguess = max(Pguess, 0.0_real64)
 
 gL = sqrt(AL/(Pguess + BL))
 gR = sqrt(AR/(Pguess + BR))

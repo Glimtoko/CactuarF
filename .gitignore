@@ -34,3 +34,6 @@ cactuarf
 
 # Other stuff
 *.dat
+
+# Build location
+build

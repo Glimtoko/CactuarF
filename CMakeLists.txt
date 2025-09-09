@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.1)
 
-project(cactuarf VERSION 0.1
+project(cactuarf VERSION 1.0
         DESCRIPTION "Cactuar Godonov Solver"
         LANGUAGES Fortran)
 enable_language(Fortran)
 
-# Currently setting the Fortran compiler to use -std=gnu, change this if you
-# want a specific standard
+# Set Fortran Standard
 set(FVERSION "-std=f2018")
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${FVERSION}")
 

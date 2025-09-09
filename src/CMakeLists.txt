@@ -9,5 +9,5 @@ set(MY_SRC   abort.f95
               riemann_solvers.f95
               text_output.f95
               CACHE INTERNAL "")
-add_executable(cactuar "${MY_SRC}")
-target_link_libraries(cactuar MPI::MPI_Fortran)
+add_executable(cactuarf "${MY_SRC}")
+target_link_libraries(cactuarf MPI::MPI_Fortran)

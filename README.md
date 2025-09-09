@@ -82,3 +82,17 @@ Here Lb and Rb correspond to boundary condition cells as before. We have gained 
 I.e. on a given processor n, the value of Lg comes from cell R on processor (n-1), and the value of Rg comes from cell L on processor (n+1). This is a very simple scheme to encode in MPI, and requires a total of 6 sends and 6 receives on processors 1 < n < (N-2), and 3 sends and 3 receives on processors 0 and (N-1). These values come from the need to communicate the entire vector **W** of primitive values.
 
 In CactuarF, parallel communication is handled in the *comms.f95* source file.
+
+## Input Deck Format
+
+```
+&input
+    ncells = 30000,
+    L = 1.0,
+    x0 = 0.5,
+    gamma = 1.4,
+    dtmax = 0.1,
+    solver = 5,
+    CFL = 0.6
+/
+```

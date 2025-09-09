@@ -12,7 +12,7 @@ use abort_mod, only: abort
 
 use mpi, only: MPI_ABORT, MPI_ALLREDUCE, MPI_Comm_Rank, MPI_Comm_Size, &
                MPI_COMM_WORLD, MPI_DOUBLE, MPI_FINALIZE, MPI_Init, &
-               MPI_MIN, MPI_WTIME
+               MPI_MIN, MPI_WTIME, MPI_BARRIER
 implicit none (type, external)
 
 integer(kind=int32) :: ncells = 30000 ! Number of cells in problem
@@ -20,7 +20,7 @@ real(kind=real64) :: L = 1.0_real64   ! Length of domain
 real(kind=real64) :: x0 = 0.5_real64  ! Position of interface/membrane
 real(kind=real64) :: gamma = 1.4_real64 ! EoS parameter, ratio of specific heats
 real(kind=real64) :: dtmax = 0.1_real64
-integer(kind=int32) :: solver = 1
+integer(kind=int32) :: solver = 5
 real(kind=real64) :: CFL = 0.6_real64 ! CFL parameter (0 < CFL <= 1.0)
 character(len=40) :: input_file
 
@@ -129,19 +129,19 @@ end if
 ! Set Riemann solver
 select case(solver)
     case(1)
-        write(*,'("Using iterative Riemann solver")')
+        if (rank == 0) write(*,'("Using iterative Riemann solver")')
         model => riemann_iterative
     case(2)
-        write(*,'("Using PVRS solver (first form)")')
+        if (rank == 0) write(*,'("Using PVRS solver (first form)")')
         model => riemann_PVRS1
     case(3)
-        write(*,'("Using PVRS solver (second form)")')
+        if (rank == 0)  write(*,'("Using PVRS solver (second form)")')
         model => riemann_PVRS2
     case(4)
-        write(*,'("Using TSRS solver")')
+        if (rank == 0)  write(*,'("Using TSRS solver")')
         model => riemann_TSRS
     case(5)
-        write(*,'("Using TRRS solver")')
+        if (rank == 0) write(*,'("Using TRRS solver")')
         model => riemann_TRRS
     case default
         call abort("Invalid value for SOLVER")
@@ -162,6 +162,8 @@ end if
 ! For now, serial only
 idL = ncells_per_proc*rank + 1
 idR = ncells_per_proc*(rank+1)
+
+call MPI_BARRIER(MPI_COMM_WORLD, status)
 
 write(*,'("Processor ",i2,":: idL = ",i6,", idR = ",i6)') rank, idL, idR
 

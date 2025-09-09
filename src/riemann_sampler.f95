@@ -1,6 +1,6 @@
 module riemann_sampler
 use iso_fortran_env, only: int32, real64
-implicit none
+implicit none (type, external)
 public :: sample
 private
 

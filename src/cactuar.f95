@@ -1,13 +1,18 @@
 program cactuarF
 use iso_fortran_env, only: int32, real64
-use riemann!, only: solve
+use riemann, only: & 
+    solve, riemann_iterative, riemann_PVRS1, &
+    riemann_PVRS2, riemann_TRRS, riemann_TSRS, &
+    riemann_API
+
 use flux_functions, only: get_flux_from_sample
 use parallel_comms, only: parallel_update
 use text_output, only: do_text_output
-
 use abort_mod, only: abort
 
-use mpi
+use mpi, only: MPI_ABORT, MPI_ALLREDUCE, MPI_Comm_Rank, MPI_Comm_Size, &
+               MPI_COMM_WORLD, MPI_DOUBLE, MPI_FINALIZE, MPI_Init, &
+               MPI_MIN, MPI_WTIME
 implicit none (type, external)
 
 integer(kind=int32) :: ncells = 30000 ! Number of cells in problem
